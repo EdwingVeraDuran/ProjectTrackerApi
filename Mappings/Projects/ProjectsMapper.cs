@@ -11,6 +11,7 @@ public static class ProjectsMapper
         {
             Id = project.Id,
             Name = project.Name,
+            Status = project.Status,
             CreatedAt = project.CreatedAt,
         };
     }

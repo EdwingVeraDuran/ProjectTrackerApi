@@ -28,25 +28,15 @@ public class ProjectsController : Controller
         return CreatedAtAction(nameof(GetAll), new { id = project.Id }, project);
     }
 
-    [HttpPut("{projectId}/name")]
-    public async Task<ActionResult> UpdateName(int projectId, [FromBody] UpdateProjectNameDto dto)
-    {
-        await _service.UpdateNameAsync(projectId, dto);
-        return NoContent();
-    }
-
     [HttpPut("{projectId}/status")]
-    public async Task<IActionResult> UpdateStatus(
-        int projectId,
-        [FromBody] UpdateProjectStatusDto dto
-    )
+    public async Task<IActionResult> UpdateStatus(int projectId, [FromBody] UpdateProjectDto dto)
     {
         await _service.UpdateStatusAsync(projectId, dto);
         return NoContent();
     }
 
     [HttpDelete("{projectId}")]
-    public async Task<IActionResult> Delete([FromRoute] int projectId)
+    public async Task<IActionResult> Delete(int projectId)
     {
         await _service.DeleteAsync(projectId);
         return NoContent();

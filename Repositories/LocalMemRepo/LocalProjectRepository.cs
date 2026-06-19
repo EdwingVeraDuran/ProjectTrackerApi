@@ -50,7 +50,7 @@ public class LocalProjectRepository : IProjectRepository
         return Task.FromResult(project);
     }
 
-    public async Task Update(int projectId, UpdateProjectDto dto)
+    public async Task UpdateName(int projectId, UpdateProjectNameDto dto)
     {
         var project = await GetById(projectId);
 
@@ -58,6 +58,15 @@ public class LocalProjectRepository : IProjectRepository
             return;
 
         project.Name = dto.Name;
+    }
+
+    public async Task UpdateStatus(int projectId, UpdateProjectStatusDto dto)
+    {
+        var project = await GetById(projectId);
+
+        if (project == null)
+            return;
+
         project.Status = dto.Status;
     }
 }

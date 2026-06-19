@@ -1,5 +1,4 @@
 using ProjectTrackerApi.DTOs;
-using ProjectTrackerApi.Enums;
 using ProjectTrackerApi.Repositories;
 
 namespace ProjectTrackerApi.Services;
@@ -36,16 +35,23 @@ public class ProjectService : IProjectService
         return await _projectRepository.GetAll();
     }
 
-    public async Task UpdateStatusAsync(int projectId, ProjectStatus newStatus)
+    public async Task UpdateNameAsync(int projectId, UpdateProjectNameDto dto)
+    {
+        var project = await _projectRepository.GetById(projectId);
+
+        if (project == null)
+            throw new Exception("The project doesn´t exist.");
+
+        await _projectRepository.UpdateName(projectId, dto);
+    }
+
+    public async Task UpdateStatusAsync(int projectId, UpdateProjectStatusDto dto)
     {
         var project = await _projectRepository.GetById(projectId);
 
         if (project == null)
             throw new Exception("The project doesn't exist.");
 
-        await _projectRepository.Update(
-            projectId,
-            new UpdateProjectDto { Name = project.Name, Status = newStatus }
-        );
+        await _projectRepository.UpdateStatus(projectId, dto);
     }
 }
