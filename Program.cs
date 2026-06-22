@@ -18,6 +18,8 @@ builder
 
 builder.Services.AddSingleton<IProjectRepository, LocalProjectRepository>();
 builder.Services.AddSingleton<IProjectService, ProjectService>();
+builder.Services.AddSingleton<ITaskRepository, LocalTaskRepository>();
+builder.Services.AddSingleton<ITaskService, TaskService>();
 
 var app = builder.Build();
 

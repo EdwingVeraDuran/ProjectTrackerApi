@@ -5,9 +5,10 @@ namespace ProjectTrackerApi.Repositories;
 
 public interface ITaskRepository
 {
-    List<TaskResponseDto> GetByProjectId(int projectId);
-    TaskItem? GetTaskById(int taskId);
-    void Create(int projectId, CreateTaskDto dto);
-    void Update(int projectId, int taskId, UpdateTaskDto dto);
-    void Delete(int taskId);
+    Task<List<TaskResponseDto>> GetByProjectId(int projectId);
+    Task<TaskItem?> GetTaskById(int taskId);
+    Task<TaskResponseDto> Create(CreateTaskDto dto);
+    Task UpdateTitle(int taskId, UpdateTaskTitleDto dto);
+    Task UpdateStatus(int taskId, UpdateTaskStatusDto dto);
+    Task Delete(int taskId);
 }

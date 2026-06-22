@@ -1,7 +1,6 @@
 namespace ProjectTrackerApi.DTOs;
 
-public class CreateTaskDto
+public class UpdateTaskTitleDto
 {
-    public int ProjectId { get; set; }
     public string Title { get; set; } = string.Empty;
 }
