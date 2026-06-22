@@ -6,10 +6,12 @@ namespace ProjectTrackerApi.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ITaskRepository _taskRepository;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, ITaskRepository taskRepository)
     {
         _projectRepository = projectRepository;
+        _taskRepository = taskRepository;
     }
 
     public async Task<ProjectResponseDto> CreateAsync(CreateProjectDto dto)
@@ -28,6 +30,7 @@ public class ProjectService : IProjectService
             throw new Exception("The project doesn't exist.");
 
         await _projectRepository.Delete(projectId);
+        await _taskRepository.DeleteByProjectId(projectId);
     }
 
     public async Task<List<ProjectResponseDto>> GetAllAsync()

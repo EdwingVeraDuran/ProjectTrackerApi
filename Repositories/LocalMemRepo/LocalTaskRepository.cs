@@ -38,6 +38,11 @@ public class LocalTaskRepository : ITaskRepository
         _tasks.Remove(task);
     }
 
+    public async Task DeleteByProjectId(int projectId)
+    {
+        _tasks.RemoveAll(task => task.ProjectId == projectId);
+    }
+
     public async Task<List<TaskResponseDto>> GetByProjectId(int projectId)
     {
         var tasks = _tasks.Where(task => task.ProjectId == projectId).ToList();

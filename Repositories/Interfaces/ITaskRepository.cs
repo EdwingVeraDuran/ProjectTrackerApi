@@ -11,4 +11,5 @@ public interface ITaskRepository
     Task UpdateTitle(int taskId, UpdateTaskTitleDto dto);
     Task UpdateStatus(int taskId, UpdateTaskStatusDto dto);
     Task Delete(int taskId);
+    Task DeleteByProjectId(int projectId);
 }
