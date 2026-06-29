@@ -1,7 +1,7 @@
 using ProjectTrackerApi.DTOs;
+using ProjectTrackerApi.Enums;
 using ProjectTrackerApi.Mappings;
 using ProjectTrackerApi.Repositories;
-
 namespace ProjectTrackerApi.Services;
 
 public class TaskService : ITaskService
@@ -9,65 +9,88 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _taskRepository;
     private readonly IProjectRepository _projectRepository;
 
-    public TaskService(ITaskRepository repository, IProjectRepository projectRepository)
+    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository)
     {
-        _taskRepository = repository;
+        _taskRepository = taskRepository;
         _projectRepository = projectRepository;
     }
 
-    public async Task<TaskResponseDto> CreateAsync(CreateTaskDto dto)
+    public async Task<List<TaskResponseDto>> GetByProjectIdAsync(Guid projectId, Guid userId)
     {
-        if (string.IsNullOrEmpty(dto.Title))
-            throw new Exception("Task title is mandatory.");
+        var project = await _projectRepository.GetById(projectId);
+        if (project == null || project.UserId != userId)
+            return [];
 
-        var project = await _projectRepository.GetById(dto.ProjectId);
-
-        if (project == null)
-            throw new Exception("Project not found.");
-
-        return await _taskRepository.Create(dto);
+        var tasks = await _taskRepository.GetByProjectId(projectId);
+        return tasks.Select(TasksMapper.ToDto).ToList();
     }
 
-    public async Task DeleteAsync(int taskId)
+    public async Task<TaskResponseDto?> GetByIdAsync(Guid projectId, Guid taskId, Guid userId)
     {
-        var task = await _taskRepository.GetTaskById(taskId);
+        var project = await _projectRepository.GetById(projectId);
+        if (project == null || project.UserId != userId)
+            return null;
 
-        if (task == null)
-            throw new Exception("Task doesn't exist.");
+        var task = await _taskRepository.GetById(taskId);
+        if (task == null || task.ProjectId != projectId)
+            return null;
 
-        await _taskRepository.Delete(taskId);
+        return TasksMapper.ToDto(task);
     }
 
-    public async Task<TaskResponseDto?> GetById(int taskId)
+    public async Task<TaskResponseDto?> CreateAsync(Guid projectId, CreateTaskDto dto, Guid userId)
     {
-        var task = await _taskRepository.GetTaskById(taskId);
-        if (task == null)
-            throw new Exception("Task doesn' exist.");
-        return await Task.FromResult(TasksMapper.ToTaskDto(task));
+        var project = await _projectRepository.GetById(projectId);
+        if (project == null || project.UserId != userId)
+            return null;
+
+        var task = new Models.TaskItem
+        {
+            Id = Guid.NewGuid(),
+            ProjectId = projectId,
+            Title = dto.Title,
+            Description = dto.Description,
+            Status = TaskItemStatus.Pending,
+            UserId = userId,
+            CreatedAt = DateTime.Now,
+        };
+
+        var created = await _taskRepository.Create(task);
+        return TasksMapper.ToDto(created);
     }
 
-    public async Task<List<TaskResponseDto>> GetByProjectId(int projectId)
+    public async Task<TaskResponseDto?> UpdateAsync(Guid projectId, Guid taskId, UpdateTaskDto dto, Guid userId)
     {
-        return await _taskRepository.GetByProjectId(projectId);
+        var project = await _projectRepository.GetById(projectId);
+        if (project == null || project.UserId != userId)
+            return null;
+
+        var task = await _taskRepository.GetById(taskId);
+        if (task == null || task.ProjectId != projectId)
+            return null;
+
+        if (dto.Title != null)
+            task.Title = dto.Title;
+        if (dto.Description != null)
+            task.Description = dto.Description;
+        if (dto.Status.HasValue)
+            task.Status = dto.Status.Value;
+
+        await _taskRepository.Update(task);
+        return TasksMapper.ToDto(task);
     }
 
-    public async Task UpdateStatusAsync(int taskId, UpdateTaskStatusDto dto)
+    public async Task<bool> DeleteAsync(Guid projectId, Guid taskId, Guid userId)
     {
-        var task = await _taskRepository.GetTaskById(taskId);
+        var project = await _projectRepository.GetById(projectId);
+        if (project == null || project.UserId != userId)
+            return false;
 
-        if (task == null)
-            throw new Exception("Task doesn't exist.");
+        var task = await _taskRepository.GetById(taskId);
+        if (task == null || task.ProjectId != projectId)
+            return false;
 
-        await _taskRepository.UpdateStatus(taskId, dto);
-    }
-
-    public async Task UpdateTitleAsync(int taskId, UpdateTaskTitleDto dto)
-    {
-        var task = await _taskRepository.GetTaskById(taskId);
-
-        if (task == null)
-            throw new Exception("Task doesn't exist.");
-
-        await _taskRepository.UpdateTitle(taskId, dto);
+        await _taskRepository.Delete(task);
+        return true;
     }
 }
