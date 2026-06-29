@@ -1,54 +1,82 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ProjectTrackerApi.DTOs;
 using ProjectTrackerApi.Services;
-
 namespace ProjectTrackerApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class ProjectsController : Controller
+[Route("api/projects")]
+[Authorize]
+public class ProjectsController : ControllerBase
 {
-    private readonly IProjectService _service;
+    private readonly IProjectService _projectService;
 
-    public ProjectsController(IProjectService service)
+    public ProjectsController(IProjectService projectService)
     {
-        _service = service;
+        _projectService = projectService;
     }
 
     [HttpGet]
     public async Task<ActionResult<List<ProjectResponseDto>>> GetAll()
     {
-        return Ok(await _service.GetAllAsync());
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var projects = await _projectService.GetAllAsync(userId.Value);
+        return Ok(new { projects });
+    }
+
+    [HttpGet("{projectId}")]
+    public async Task<ActionResult<ProjectResponseDto>> GetById(Guid projectId)
+    {
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var project = await _projectService.GetByIdAsync(projectId, userId.Value);
+        if (project == null) return NotFound();
+
+        return Ok(project);
     }
 
     [HttpPost]
     public async Task<ActionResult<ProjectResponseDto>> Create([FromBody] CreateProjectDto dto)
     {
-        var project = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetAll), new { id = project.Id }, project);
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var project = await _projectService.CreateAsync(dto, userId.Value);
+        return CreatedAtAction(nameof(GetById), new { projectId = project.Id }, project);
     }
 
-    [HttpPut("{projectId}/name")]
-    public async Task<ActionResult> UpdateName(int projectId, [FromBody] UpdateProjectNameDto dto)
+    [HttpPut("{projectId}")]
+    public async Task<ActionResult<ProjectResponseDto>> Update(Guid projectId, [FromBody] UpdateProjectDto dto)
     {
-        await _service.UpdateNameAsync(projectId, dto);
-        return NoContent();
-    }
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
 
-    [HttpPut("{projectId}/status")]
-    public async Task<IActionResult> UpdateStatus(
-        int projectId,
-        [FromBody] UpdateProjectStatusDto dto
-    )
-    {
-        await _service.UpdateStatusAsync(projectId, dto);
-        return NoContent();
+        var project = await _projectService.UpdateAsync(projectId, dto, userId.Value);
+        if (project == null) return NotFound();
+
+        return Ok(project);
     }
 
     [HttpDelete("{projectId}")]
-    public async Task<IActionResult> Delete([FromRoute] int projectId)
+    public async Task<IActionResult> Delete(Guid projectId)
     {
-        await _service.DeleteAsync(projectId);
+        var userId = GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var deleted = await _projectService.DeleteAsync(projectId, userId.Value);
+        if (!deleted) return NotFound();
+
         return NoContent();
+    }
+
+    private Guid? GetUserId()
+    {
+        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (claim == null) return null;
+        return Guid.TryParse(claim, out var id) ? id : null;
     }
 }
