@@ -52,7 +52,7 @@ public class ProjectService : IProjectService
             Name = dto.Name,
             Description = dto.Description,
             UserId = userId,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
         };
 
         var created = await _projectRepository.Create(project);

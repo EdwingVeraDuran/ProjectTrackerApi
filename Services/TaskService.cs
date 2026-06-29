@@ -52,7 +52,7 @@ public class TaskService : ITaskService
             Description = dto.Description,
             Status = TaskItemStatus.Pending,
             UserId = userId,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
         };
 
         var created = await _taskRepository.Create(task);

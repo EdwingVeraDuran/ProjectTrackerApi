@@ -14,7 +14,7 @@ Models → DTOs → EF Repositories → Mappings (static classes) → Services �
 ```
 
 - **Mappings** are hand-written static extension methods (no AutoMapper)
-- **Repositories** (EF Core) use `DateTime.Now` (local) for `CreatedAt`
+- **Repositories** (EF Core) use `DateTime.UtcNow` for `CreatedAt`
 - **Services** add validation + business logic + user ownership checks
 - **Controllers** use `[ApiController]` + `ControllerBase` with `[Authorize]`
 - **Auth** uses BCrypt for password hashing + JWT tokens (8h expiry)

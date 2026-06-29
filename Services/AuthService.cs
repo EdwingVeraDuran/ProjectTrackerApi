@@ -31,7 +31,7 @@ public class AuthService : IAuthService
             Name = request.Name,
             Email = request.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
         };
 
         var created = await _userRepository.Create(user);
