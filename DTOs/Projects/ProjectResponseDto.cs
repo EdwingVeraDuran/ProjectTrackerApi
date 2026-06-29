@@ -1,11 +1,11 @@
-using ProjectTrackerApi.Enums;
-
 namespace ProjectTrackerApi.DTOs;
 
 public class ProjectResponseDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public ProjectStatus Status { get; set; }
+    public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int TaskCount { get; set; }
+    public int CompletedCount { get; set; }
 }

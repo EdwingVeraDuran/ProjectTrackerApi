@@ -1,19 +1,19 @@
 using ProjectTrackerApi.DTOs;
 using ProjectTrackerApi.Models;
-
 namespace ProjectTrackerApi.Mappings;
 
 public static class TasksMapper
 {
-    public static TaskResponseDto ToTaskDto(TaskItem taskItem)
+    public static TaskResponseDto ToDto(TaskItem task)
     {
-        return new TaskResponseDto()
+        return new TaskResponseDto
         {
-            Id = taskItem.Id,
-            ProjectId = taskItem.ProjectId,
-            Title = taskItem.Title,
-            Status = taskItem.Status,
-            CreatedAt = taskItem.CreatedAt,
+            Id = task.Id,
+            ProjectId = task.ProjectId,
+            Title = task.Title,
+            Description = task.Description,
+            Status = task.Status,
+            CreatedAt = task.CreatedAt,
         };
     }
 }
