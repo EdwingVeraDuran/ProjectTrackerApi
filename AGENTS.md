@@ -2,29 +2,52 @@
 
 ## Stack
 
-- .NET 10.0 ASP.NET Core Web API (minimal API style, `ImplicitUsings` + `Nullable` enabled)
-- In-memory storage only — no database, no EF Core
+- .NET 10.0 ASP.NET Core Web API (`ImplicitUsings` + `Nullable` enabled)
+- PostgreSQL + Entity Framework Core (Npgsql)
+- JWT Bearer authentication
 - Single project file (`ProjectTrackerApi.csproj`), no `.sln`
 
 ## Architecture
 
 ```
-Models → DTOs → Repositories (Interfaces/) → LocalMemRepo/
-              → Mappings (static classes)
-              → Services (Interfaces/) → Program.cs
+Models → DTOs → EF Repositories → Mappings (static classes) → Services → Controllers → Program.cs
 ```
 
 - **Mappings** are hand-written static extension methods (no AutoMapper)
-- **Repositories** use `DateTime.Now` (not UTC) for `CreatedAt`
-- **Services** add validation + business logic on top of repos
-- **Controllers** use the standard `[ApiController]` + `Controller` pattern
+- **Repositories** (EF Core) use `DateTime.Now` (local) for `CreatedAt`
+- **Services** add validation + business logic + user ownership checks
+- **Controllers** use `[ApiController]` + `ControllerBase` with `[Authorize]`
+- **Auth** uses BCrypt for password hashing + JWT tokens (8h expiry)
 
-## Project state
+## Database
 
-- Project layer (`IProjectRepository` + `LocalProjectRepository` + `IProjectService` + `ProjectService` + `ProjectsController`): ✅ complete
-- Task layer (`ITaskRepository` + `LocalTaskRepository`): repo exists, but **no `ITaskService`/`TaskService`** and **no `TasksController`**
-- `Program.cs` has DI wired for project repos/services and controllers
-- `ITaskRepository` is not yet registered in DI (no consumer yet)
+- PostgreSQL via Npgsql EF Core provider
+- Connection string: `ConnectionStrings:AppContext` in `appsettings.json`
+- Schema auto-created on dev startup via `EnsureCreated()`
+- Entities: `User`, `Project`, `TaskItem`
+- Indexes: `User.Email` (unique), `Project.UserId`, `TaskItem.ProjectId`, `TaskItem.UserId`
+
+## API
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| POST | `/api/auth/register` | No | Register new user |
+| POST | `/api/auth/login` | No | Login, returns JWT |
+| GET | `/api/projects` | JWT | List user's projects (with task counts) |
+| GET | `/api/projects/{id}` | JWT | Get project by ID |
+| POST | `/api/projects` | JWT | Create project |
+| PUT | `/api/projects/{id}` | JWT | Update project |
+| DELETE | `/api/projects/{id}` | JWT | Delete project + its tasks |
+| GET | `/api/projects/{pid}/tasks` | JWT | List project's tasks |
+| GET | `/api/projects/{pid}/tasks/{tid}` | JWT | Get task by ID |
+| POST | `/api/projects/{pid}/tasks` | JWT | Create task in project |
+| PUT | `/api/projects/{pid}/tasks/{tid}` | JWT | Update task |
+| DELETE | `/api/projects/{pid}/tasks/{tid}` | JWT | Delete task |
+
+## Enums
+
+- `TaskItemStatus`: `Pending`, `InProgress`, `Completed`
+- Serialized as camelCase JSON strings (e.g. `"inProgress"`)
 
 ## Commands
 
@@ -37,8 +60,7 @@ dotnet run --launch-profile https     # dev server on https://localhost:7283
 ## Conventions
 
 - File-scoped namespaces (no block braces)
-- `Primary constructor` style not yet used; existing code uses explicit fields/ctors
-- DTOs live in `ProjectTrackerApi.DTOs` namespace (flat, not sub-namespace per entity)
-- Repository interfaces in `ProjectTrackerApi.Repositories`, implementations in same
-- Service interfaces in `ProjectTrackerApi.Services`, implementations in same
-- Repos are registered as singletons (`AddSingleton`) since they use in-memory state
+- Explicit constructors (no primary constructors yet)
+- DTOs / Mappings use flat `ProjectTrackerApi.DTOs` / `ProjectTrackerApi.Mappings` namespaces
+- Repositories / Services in `ProjectTrackerApi.Repositories` / `ProjectTrackerApi.Services`
+- Repos registered as `AddScoped` (EF Core DbContext)

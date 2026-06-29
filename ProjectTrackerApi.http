@@ -1,6 +1,80 @@
 @ProjectTrackerApi_HostAddress = http://localhost:5231
 
-GET {{ProjectTrackerApi_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register
+POST {{ProjectTrackerApi_HostAddress}}/api/auth/register
+Content-Type: application/json
 
-###
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Login
+POST {{ProjectTrackerApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Get all projects
+GET {{ProjectTrackerApi_HostAddress}}/api/projects
+Authorization: Bearer <token>
+
+### Create project
+POST {{ProjectTrackerApi_HostAddress}}/api/projects
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "name": "My Project",
+  "description": "A sample project"
+}
+
+### Get project by ID
+GET {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}
+Authorization: Bearer <token>
+
+### Update project
+PUT {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "name": "Updated Project",
+  "description": "Updated description"
+}
+
+### Delete project
+DELETE {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}
+Authorization: Bearer <token>
+
+### Get tasks by project
+GET {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}/tasks
+Authorization: Bearer <token>
+
+### Create task
+POST {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}/tasks
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "title": "My Task",
+  "description": "Task description"
+}
+
+### Update task
+PUT {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}/tasks/{{taskId}}
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "title": "Updated Task",
+  "status": "completed"
+}
+
+### Delete task
+DELETE {{ProjectTrackerApi_HostAddress}}/api/projects/{{projectId}}/tasks/{{taskId}}
+Authorization: Bearer <token>

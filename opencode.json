@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission":
+  {
+    "external_directory": {
+      "~/Documents/Notes/Notas Programación/01 - Proyectos/2026-Project Tracker/": "allow"
+    }
+  }
+}
