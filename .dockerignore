@@ -1,0 +1,9 @@
+**/bin/
+**/obj/
+**/.git/
+**/.gitignore
+**/AGENTS.md
+**/opencode.json
+**/README.md
+**/.dockerignore
+**/docker-compose.yml
