@@ -10,19 +10,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApiDocument(config =>
 {
-    config.AddSecurity("Bearer", new NSwag.OpenApiSecurityScheme
-    {
-        Type = NSwag.OpenApiSecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        Description = "Enter your JWT token",
-    });
+    config.AddSecurity(
+        "Bearer",
+        new NSwag.OpenApiSecurityScheme
+        {
+            Type = NSwag.OpenApiSecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            Description = "Enter your JWT token",
+        }
+    );
     config.OperationProcessors.Add(
         new NSwag.Generation.Processors.Security.AspNetCoreOperationSecurityScopeProcessor("Bearer")
     );
 });
 
-builder.Services.AddControllers()
+builder
+    .Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
@@ -36,7 +40,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AppContext"))
 );
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder
+    .Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -69,6 +74,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseOpenApi();
     app.UseSwaggerUi();
+    app.UseHttpsRedirection();
 }
 
 using (var scope = app.Services.CreateScope())
@@ -77,7 +83,6 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
