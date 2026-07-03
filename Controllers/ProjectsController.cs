@@ -24,7 +24,7 @@ public class ProjectsController : ControllerBase
         if (userId == null) return Unauthorized();
 
         var projects = await _projectService.GetAllAsync(userId.Value);
-        return Ok(new { projects });
+        return Ok(projects);
     }
 
     [HttpGet("{projectId}")]
